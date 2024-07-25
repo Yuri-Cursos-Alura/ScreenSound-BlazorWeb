@@ -1,0 +1,35 @@
+﻿@page "/Artistas"
+@using ScreenSound.Web.Response
+@using ScreenSound.Web.Services
+@inject ArtistaAPI api
+
+<h1>Artistas</h1>
+
+@if(_artistas is not null)
+{
+    if (_artistas.Count > 0)
+    {
+        foreach (var artista in _artistas)
+        {
+            <p>@artista.Nome</p>
+        }
+    }
+    else
+    {
+        <p>Nenhum artista encontrado :&lt</p>
+    }
+
+}
+else
+{
+    <p>Procurando... </p>
+}
+
+@code {
+    private ICollection<ArtistaResponse>? _artistas { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _artistas = await api.GetArtistasAsync();
+    }
+}
