@@ -22,6 +22,10 @@ public class ScreenSoundContext: DbContext
 
     }
 
+    public ScreenSoundContext()
+    {
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
