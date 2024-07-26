@@ -1,5 +1,45 @@
-﻿<h3>CadastrarArtista</h3>
+﻿@page "/CadastrarArtista"
+@inject ArtistaAPI api
+@inject NavigationManager navigationManager
+
+<MudPaper Class="px-8 py-8">
+    <MudText Typo="Typo.h4">Cadastro do Artista</MudText>
+
+    <MudForm>
+        <MudTextField T="string" Placeholder="Nome do Artista"
+            Variant="Variant.Outlined"
+            Required="true"
+            RequiredError="Campo obrigatório."
+            @bind-Value="Name"/>
+
+        <MudTextField T="string" Placeholder="Biografia do Artista"
+            Variant="Variant.Outlined"
+            Lines="4"
+            Required="true"
+            RequiredError="Campo obrigatório."
+            @bind-Value="Bio"/>
+
+        <MudDivider Class="my-4"/>
+
+        <div >
+            <MudButton @onclick="RegisterAsync"
+                Variant="Variant.Filled"
+                Color="Color.Primary">
+                Cadastrar
+            </MudButton>
+        </div>
+        
+    </MudForm>
+</MudPaper>
 
 @code {
+    private string? Name;
+    private string? Bio;
 
+    private async Task RegisterAsync()
+    {
+        var request = new ArtistaRequest(Name!, Bio!);
+        await api.AddArtistaAsync(request);
+        navigationManager.NavigateTo("/Artistas");
+    }
 }
