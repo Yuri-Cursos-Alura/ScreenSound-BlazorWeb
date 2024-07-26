@@ -1,6 +1,7 @@
 ﻿using ScreenSound.Web.Requests;
 using ScreenSound.Web.Response;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ScreenSound.Web.Services;
 
@@ -17,5 +18,23 @@ public class ArtistaAPI(IHttpClientFactory httpClient)
     public async Task AddArtistaAsync(ArtistaRequest artist)
     {
         await _httpClient.PostAsJsonAsync("artistas", artist);
+    }
+
+    public async Task DeleteArtistaAsync(int id)
+    {
+        await _httpClient.DeleteAsync($"artistas/{id}");
+    }
+
+    public async Task<ArtistaResponse?> GetArtistaByNameAsync(string name)
+    {
+        var response = await _httpClient.GetAsync($"artistas/{name}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<ArtistaResponse>(content);
+        }
+        else
+            return null;
     }
 }
