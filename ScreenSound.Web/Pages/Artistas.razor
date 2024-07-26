@@ -7,10 +7,16 @@
 {
     if (_artistas.Count > 0)
     {
-        foreach (var artista in _artistas)
-        {
-            <p>@artista.Nome</p>
-        }
+        <MudGrid>
+            @foreach (var artista in _artistas)
+            {
+                <MudItem xs="3">
+                    <ArtistCard Artista="artista" />
+                </MudItem>
+                
+            }
+        </MudGrid>
+
     }
     else
     {
