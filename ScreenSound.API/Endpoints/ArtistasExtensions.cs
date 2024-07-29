@@ -34,9 +34,26 @@ public static class ArtistasExtensions
 
         });
 
-        app.MapPost("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] ArtistaRequest artistaRequest) =>
+        app.MapPost("/Artistas",async ([FromServices]IHostEnvironment env, [FromServices] DAL<Artista> dal, [FromBody] ArtistaRequest artistaRequest) =>
         {
+            string fileName = "";
+
+            if (artistaRequest.fotoPerfil is not null)
+            {
+                var nome = artistaRequest.nome.Trim();
+                fileName = $"{DateTime.Now.ToString("ddMMyyyhhss")}.{nome}.jpeg";
+
+                var path = Path.Combine(env.ContentRootPath, "wwwroot", "FotosPerfil", fileName);
+
+                using var ms = new MemoryStream(Convert.FromBase64String(artistaRequest.fotoPerfil));
+                using var fs = new FileStream(path, FileMode.Create);
+
+                await ms.CopyToAsync(fs);
+            }
+
             var artista = new Artista(artistaRequest.nome, artistaRequest.bio);
+
+            if (!string.IsNullOrWhiteSpace(fileName)) artista.FotoPerfil = $"/FotosPerfil/{fileName}";
 
             dal.Adicionar(artista);
             return Results.Ok();
