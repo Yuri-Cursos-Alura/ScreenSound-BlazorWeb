@@ -1,11 +1,11 @@
-﻿@page "/CadastrarArtista/{ArtistName}"
+﻿@page "/EditarArtista/{ArtistName}"
 @inject ArtistaAPI api
 @inject NavigationManager navigationManager
 
 <MudPaper Class="px-8 py-8">
     @if (Artist is not null)
     {
-        <MudText Typo="Typo.h4">Edição do Artista</MudText>
+        <MudText Typo="Typo.h4">Edição de @Artist.Nome</MudText>
 
         <MudForm>
             <MudTextField T="string" Placeholder="Nome do Artista"
