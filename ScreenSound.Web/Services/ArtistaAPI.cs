@@ -32,7 +32,14 @@ public class ArtistaAPI(IHttpClientFactory httpClient)
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<ArtistaResponse>(content);
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var artist = JsonSerializer.Deserialize<ArtistaResponse>(content, options);
+            return artist;
         }
         else
             return null;
