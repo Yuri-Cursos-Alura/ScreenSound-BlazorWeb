@@ -10,18 +10,27 @@
             Variant="Variant.Outlined"
             Required="true"
             RequiredError="Campo obrigatório."
-            @bind-Value="Name"/>
+            @bind-Value="_name"/>
 
         <MudTextField T="string" Placeholder="Biografia do Artista"
             Variant="Variant.Outlined"
             Lines="4"
             Required="true"
             RequiredError="Campo obrigatório."
-            @bind-Value="Bio"/>
+            @bind-Value="_bio"/>
+
+        <MudImage Class="mt-4" Src="@_fileImage" Width="200" Height="200"/>
+        <MudFileUpload T="IBrowserFile" Accept=".jpeg, .png" FilesChanged="UploadFileAsync" Class="mt-4">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.PhotoCamera">Foto de perfil</MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
 
         <MudDivider Class="my-4"/>
 
-        <div >
+        <div>
             <MudButton @onclick="RegisterAsync"
                 Variant="Variant.Filled"
                 Color="Color.Primary">
@@ -33,13 +42,35 @@
 </MudPaper>
 
 @code {
-    private string? Name;
-    private string? Bio;
+    private const int _maxFileSize = 1024 * 1024 * 15;
+    private const string _format = "image/jpeg";
+
+    private string? _name;
+    private string? _bio;
+    private string? _fileToUpload;
+    private string? _fileImage;
 
     private async Task RegisterAsync()
     {
-        var request = new ArtistaRequest(Name!, Bio!);
+        var request = new ArtistaRequest(_name!, _bio!, _fileToUpload);
         await api.AddArtistaAsync(request);
         navigationManager.NavigateTo("/Artistas");
+    }
+
+    private async Task UploadFileAsync(IBrowserFile file)
+    {
+        var resizedImage = await file.RequestImageFileAsync(_format, 200, 200);
+
+        if (resizedImage.Size > _maxFileSize)
+        {
+            
+        }
+
+        using var fileStream = resizedImage.OpenReadStream();
+        using var memoryStream = new MemoryStream();
+        await fileStream.CopyToAsync(memoryStream);
+
+        _fileToUpload = Convert.ToBase64String(memoryStream.ToArray());
+        _fileImage = $"data:{_format};base64,{_fileToUpload}";
     }
 }
