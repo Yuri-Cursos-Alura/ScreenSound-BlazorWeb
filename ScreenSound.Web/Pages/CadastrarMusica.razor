@@ -1,5 +1,99 @@
-﻿<h3>CadastrarMusica</h3>
+﻿@page "/CadastrarMusica"
+@inject ArtistaAPI artistaAPI
+@inject GeneroAPI generoAPI
+@inject MusicaAPI musicaAPI
+@inject NavigationManager navManager
+
+<MudPaper Class="px-8 pt-2 pb-4 mx-12 my-8" Justify="Justify.Center">
+
+    <MudText Class="mt-8" Typo="Typo.h4">Cadastro de Música</MudText>
+
+    <MudForm>
+
+        <MudTextField Class="mt-4" T="string" Placeholder="Nome da música/canção"
+                      @bind-Value="Name"
+                      Variant="Variant.Outlined"
+                      Required="true"
+                      RequiredError="Campo obrigatório." />
+        <MudSelect Class="mt-4" T="ArtistaResponse" Label="Artistas"
+                   @bind-Value="SelectedArtist"
+                   Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+            @if (ArtistsOptions is not null)
+            {
+                foreach(var artist in ArtistsOptions)
+                {
+                    <MudSelectItem Value="artist"/>
+                }
+            }
+        </MudSelect>
+
+        <MudTextField Class="mt-4" T="int" Placeholder="Ano de lançamento"
+                      @bind-Value="ReleaseDate"
+                      Variant="Variant.Outlined"
+                      Lines="1"
+                      Required="true"
+                      RequiredError="Campo obrigatório." />
+
+        <MudSelect Class="mt-4" T="GeneroResponse" Label="Gêneros" MultiSelection="true"
+                   ToStringFunc="@GeneroToString"
+                   MultiSelectionTextFunc="@MultiGeneroToString"
+                   @bind-Value="dummy" @bind-SelectedValues="SelectedGenres"
+                   Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+            @if (GenresOptions is not null)
+            {
+                foreach (var genre in GenresOptions)
+                {
+                    <MudSelectItem Value="genre" />
+                }
+            }
+        </MudSelect>
+
+        <div class="d-flex align-center justify-space-between mt-4">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="ml-auto"
+                       @onclick="Register">
+                Cadastrar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Info"
+                       Class="ml-3">
+                Voltar
+            </MudButton>
+        </div>
+
+    </MudForm>
+
+</MudPaper>
 
 @code {
+    private int ReleaseDate { get; set; }
+    private string? Name { get; set; }
 
+    private IEnumerable<ArtistaResponse>? ArtistsOptions { get; set; }
+    private IEnumerable<GeneroResponse>? GenresOptions { get; set; }
+
+    private GeneroResponse? dummy { get; set; }
+    private IEnumerable<GeneroResponse>? SelectedGenres { get; set; }
+    private ArtistaResponse? SelectedArtist { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ArtistsOptions = await artistaAPI.GetArtistasAsync();
+        GenresOptions = await generoAPI.GetGenerosAsync();
+    }
+
+    private string GeneroToString(GeneroResponse genero) => genero.Nome;
+
+    private string MultiGeneroToString(List<string> generosString) => string.Join(", ", generosString);
+
+    private async Task Register()
+    {
+        if (SelectedArtist is null || Name is null || SelectedGenres is null || !SelectedGenres.Any()) return;
+
+        var generos = SelectedGenres.Select(g => new GeneroRequest(g.Nome, g.Descricao, g.Id)).ToList();
+        var musica = new MusicaRequest(Name, SelectedArtist.Id, ReleaseDate, generos);
+        await musicaAPI.AddMusicaAsync(musica);
+        navManager.NavigateTo("/MusicasPorArtista");
+    }
 }
