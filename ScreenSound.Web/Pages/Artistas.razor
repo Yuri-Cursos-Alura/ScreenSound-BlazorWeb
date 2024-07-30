@@ -1,0 +1,65 @@
+﻿@page "/Artistas"
+@inject ArtistaAPI api
+
+<MudStack Class="mv-4" Row="true" Justify="Justify.SpaceBetween">
+    <MudText Class="mb-4" Typo="Typo.h4">Artistas cadastrados</MudText>
+
+    <MudPagination Count="@_totalPages" SelectedChanged="PageChanged"></MudPagination>
+</MudStack>
+
+@if (_artistsByPage is not null)
+{
+    if (_artistsByPage.Count > 0)
+    {
+        <MudGrid>
+            @foreach (var artista in _artistsByPage)
+            {
+                <MudItem xs="3">
+                    <ArtistCard Artista="artista" />
+                </MudItem>
+                
+            }
+        </MudGrid>
+
+    }
+    else
+    {
+        <p>Nenhum artista encontrado :&lt</p>
+    }
+
+}
+else
+{
+    <p>Procurando... </p>
+}
+
+@code {
+    private ICollection<ArtistaResponse>? _artists { get; set; }
+    private int _totalPages { get; set; }
+    private int _totalItems { get; set; }
+    private int _size { get; set; } = 8;
+    private ICollection<ArtistaResponse>? _artistsByPage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _artists = await api.GetArtistasAsync();
+        if (_artists is not null)
+        {
+            _artists = _artists.OrderByDescending(a => a.Id).ToList();
+            _totalItems = _artists.Count();
+            _totalPages = Convert.ToInt32(Math.Ceiling((_totalItems * 1.0) / _size));
+            PageChanged(1);
+        }
+    }
+
+    private void PageChanged(int pageNumber)
+    {
+        if (_artists is null) return;
+
+        var index = pageNumber - 1;
+        _artistsByPage = _artists
+            .Skip(_size * index)
+            .Take(_size)
+            .ToList();
+    }
+}

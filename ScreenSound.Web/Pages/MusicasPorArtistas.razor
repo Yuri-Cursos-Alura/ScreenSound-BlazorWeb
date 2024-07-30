@@ -1,0 +1,65 @@
+﻿@page "/MusicasPorArtista"
+@inject MusicaAPI api
+
+<MudStack Class="mv-4" Row="true" Justify="Justify.SpaceBetween">
+    <MudText Class="mb-4" Typo="Typo.h4">Musicas cadastradss</MudText>
+
+    <MudPagination Count="@_totalPages" SelectedChanged="PageChanged"></MudPagination>
+</MudStack>
+
+@if (_musicsByPage is not null)
+{
+    if (_musicsByPage.Count > 0)
+    {
+        <MudGrid>
+            @foreach (var music in _musicsByPage)
+            {
+                <MudItem xs="3">
+                    <MusicCard Musica="music" />
+                </MudItem>
+
+            }
+        </MudGrid>
+
+    }
+    else
+    {
+        <p>Nenhuma música encontrado :&lt</p>
+    }
+
+}
+else
+{
+    <p>Procurando... </p>
+}
+
+@code {
+    private ICollection<MusicaResponse>? _musics { get; set; }
+    private int _totalPages { get; set; }
+    private int _totalItems { get; set; }
+    private int _size { get; set; } = 8;
+    private ICollection<MusicaResponse>? _musicsByPage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _musics = await api.GetMusicasAsync();
+        if (_musics is not null)
+        {
+            _musics = _musics.OrderByDescending(a => a.Id).ToList();
+            _totalItems = _musics.Count();
+            _totalPages = Convert.ToInt32(Math.Ceiling((_totalItems * 1.0) / _size));
+            PageChanged(1);
+        }
+    }
+
+    private void PageChanged(int pageNumber)
+    {
+        if (_musics is null) return;
+
+        var index = pageNumber - 1;
+        _musicsByPage = _musics
+            .Skip(_size * index)
+            .Take(_size)
+            .ToList();
+    }
+}
